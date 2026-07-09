@@ -1,8 +1,11 @@
 package com.barber.demo.service.impl;
 
 import com.barber.demo.dao.HorarioDao;
+import com.barber.demo.domain.Empleado;
 import com.barber.demo.domain.Horario;
 import com.barber.demo.service.HorarioService;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,6 +34,11 @@ public class HorarioServiceImpl implements HorarioService {
     @Override
     public void delete(Horario horario) {
         horarioDao.delete(horario);
+    }
+
+    @Override
+    public Horario buscarPorEmpleadoFechaHora(Empleado empleado, LocalDate fecha, LocalTime hora) {
+        return horarioDao.findByEmpleadoAndFechaAndHora(empleado, fecha, hora);
     }
 
 }

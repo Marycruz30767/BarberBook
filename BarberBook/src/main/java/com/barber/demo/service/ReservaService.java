@@ -15,4 +15,6 @@ public interface ReservaService {
     void delete(Reserva reserva);
 
     List<Reserva> getReservasPorUsuario(Usuario usuario);
+
+    void cancelarReserva(Integer idReserva, Usuario usuarioSesion);
 }

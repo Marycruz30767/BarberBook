@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class ReservaController {
@@ -50,31 +52,45 @@ public class ReservaController {
             horarioService.save(horario);
         }
 
-       reservaService.save(reserva);
+        reservaService.save(reserva);
 
-return "redirect:/reserva/confirmacion/" + reserva.getIdReserva();
+        return "redirect:/reserva/confirmacion/" + reserva.getIdReserva();
     }
 
     @GetMapping("/reserva/mis-reservas")
     public String misReservas(Model model, HttpSession session) {
         Usuario usuario = (Usuario) session.getAttribute("usuario");
+        if (usuario == null) {
+            return "redirect:/login";
+        }
         var reservas = reservaService.getReservasPorUsuario(usuario);
         model.addAttribute("reservas", reservas);
         return "reserva/listado";
     }
 
-    @GetMapping("/reserva/cancelar/{idReserva}")
-    public String cancelar(Reserva reserva) {
-        reserva = reservaService.getReserva(reserva);
-        reserva.setEstado("Cancelada");
-        reservaService.save(reserva);
+    @PostMapping("/reserva/cancelar/{idReserva}")
+    public String cancelar(@PathVariable Integer idReserva, HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        Usuario usuario = (Usuario) session.getAttribute("usuario");
+        if (usuario == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            reservaService.cancelarReserva(idReserva, usuario);
+            redirectAttributes.addFlashAttribute("mensaje",
+                    "La cita fue cancelada correctamente. El espacio quedó disponible.");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+
         return "redirect:/reserva/mis-reservas";
     }
 
-  @GetMapping("/reserva/confirmacion/{idReserva}")
-public String confirmacion(Reserva reserva, Model model) {
-    reserva = reservaService.getReserva(reserva);
-    model.addAttribute("reserva", reserva);
-    return "reserva/confirmacion";
-}
+    @GetMapping("/reserva/confirmacion/{idReserva}")
+    public String confirmacion(Reserva reserva, Model model) {
+        reserva = reservaService.getReserva(reserva);
+        model.addAttribute("reserva", reserva);
+        return "reserva/confirmacion";
+    }
 }
