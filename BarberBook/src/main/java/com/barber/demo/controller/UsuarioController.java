@@ -9,7 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 public class UsuarioController {
 
@@ -40,17 +40,27 @@ public class UsuarioController {
         return "cliente/perfil";
     }
 
-    @PostMapping("/usuario/guardar")
-    public String guardarPerfil(Usuario usuario, jakarta.servlet.http.HttpSession session) {
-        Usuario usuarioSesion = (Usuario) session.getAttribute("usuario");
+@PostMapping("/usuario/guardar")
+public String guardarPerfil(Usuario usuario,
+        jakarta.servlet.http.HttpSession session,
+        RedirectAttributes redirectAttributes) {
 
-        usuario.setIdUsuario(usuarioSesion.getIdUsuario());
-        usuario.setRol(usuarioSesion.getRol());
-        usuario.setActivo(true);
+    Usuario usuarioSesion = (Usuario) session.getAttribute("usuario");
 
-        usuarioService.save(usuario);
-        session.setAttribute("usuario", usuario);
+    usuario.setIdUsuario(usuarioSesion.getIdUsuario());
+    usuario.setContrasena(usuarioSesion.getContrasena());
+    usuario.setRol(usuarioSesion.getRol());
+    usuario.setActivo(usuarioSesion.getActivo());
 
-        return "redirect:/usuario/perfil";
-    }
+    usuarioService.save(usuario);
+
+    session.setAttribute("usuario", usuario);
+
+    redirectAttributes.addFlashAttribute(
+            "mensaje",
+            "Los datos se guardaron correctamente."
+    );
+
+    return "redirect:/usuario/perfil";
+}
 }
