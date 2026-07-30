@@ -14,6 +14,9 @@ import com.barber.demo.domain.Usuario;
 @Service
 public class ReservaServiceImpl implements ReservaService {
 
+    private static final List<String> ESTADOS_VALIDOS
+            = List.of("Pendiente", "En proceso", "Completada", "Cancelada");
+
     @Autowired
     private ReservaDao reservaDao;
 
@@ -78,4 +81,33 @@ public class ReservaServiceImpl implements ReservaService {
             horarioService.save(horario);
         }
     }
+
+    @Override
+    public void actualizarEstado(Integer idReserva, String nuevoEstado) {
+        if (nuevoEstado == null || !ESTADOS_VALIDOS.contains(nuevoEstado)) {
+            throw new IllegalArgumentException("El estado indicado no es valido");
+        }
+        Reserva reserva = reservaDao.findById(idReserva)
+                .orElseThrow(() -> new IllegalArgumentException("La reserva indicada no existe."));
+
+        boolean estabaCancelada = "Cancelada".equalsIgnoreCase(reserva.getEstado());
+        boolean quedaCancelada = "Cancelada".equalsIgnoreCase(nuevoEstado);
+
+        reserva.setEstado(nuevoEstado);
+        reservaDao.save(reserva);
+
+        if (!estabaCancelada && quedaCancelada) {
+            liberarHorarioSiCorresponde(reserva);
+        }
+    }
+
+    private void liberarHorarioSiCorresponde(Reserva reserva) {
+        Horario horario = horarioService.buscarPorEmpleadoFechaHora(reserva.getEmpleado(), reserva.getFecha(),reserva.getHora());
+        if(horario!= null){
+            horario.setDisponible(true);
+            horarioService.save(horario);
+        }
+        
+    }
+
 }
