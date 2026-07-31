@@ -47,7 +47,15 @@
            th:text="#{menu.perfil}">
             Mi perfil
         </a>
-
+<a th:href="@{/empleado/citas}"
+   class="btn btn-outline-primary"
+   th:text="#{menu.citasEmpleado}">
+    Citas asignadas
+</a>
+        <a th:href="@{/admin/dashboard}"
+   class="btn btn-outline-success">
+    Estadísticas
+</a>
         <a th:href="@{/logout}"
            class="btn btn-outline-danger"
            th:text="#{menu.salir}">

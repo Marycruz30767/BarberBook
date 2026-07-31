@@ -12,4 +12,5 @@ public interface ServicioService {
     void save(Servicio servicio);
 
     void delete(Servicio servicio);
+    long getTotalServicios();
 }

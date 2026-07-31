@@ -7,6 +7,7 @@ import com.barber.demo.service.HorarioService;
 import com.barber.demo.service.ReservaService;
 import java.time.LocalDateTime;
 import java.util.List;
+import com.barber.demo.domain.Empleado;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.barber.demo.domain.Usuario;
@@ -24,7 +25,10 @@ public class ReservaServiceImpl implements ReservaService {
     public List<Reserva> getReservas() {
         return reservaDao.findAll();
     }
-
+@Override
+public List<Reserva> getReservasPorEmpleado(Empleado empleado) {
+    return reservaDao.findByEmpleado(empleado);
+}
     @Override
     public Reserva getReserva(Reserva reserva) {
         return reservaDao.findById(reserva.getIdReserva()).orElse(null);
@@ -34,7 +38,15 @@ public class ReservaServiceImpl implements ReservaService {
     public void save(Reserva reserva) {
         reservaDao.save(reserva);
     }
+@Override
+public List<Reserva> getTodasLasReservas() {
+    return reservaDao.findAll();
+}
 
+@Override
+public List<Reserva> getReservasPorEstado(String estado) {
+    return reservaDao.findByEstadoOrderByFechaDescHoraDesc(estado);
+}
     @Override
     public void delete(Reserva reserva) {
         reservaDao.delete(reserva);
@@ -44,7 +56,15 @@ public class ReservaServiceImpl implements ReservaService {
     public List<Reserva> getReservasPorUsuario(Usuario usuario) {
         return reservaDao.findByUsuarioOrderByFechaDescHoraDesc(usuario);
     }
+@Override
+public long getTotalReservas() {
+    return reservaDao.count();
+}
 
+@Override
+public long getCantidadPorEstado(String estado) {
+    return reservaDao.countByEstado(estado);
+}
     @Override
     public void cancelarReserva(Integer idReserva, Usuario usuarioSesion) {
         if (usuarioSesion == null) {

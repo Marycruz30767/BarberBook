@@ -14,4 +14,5 @@ public interface UsuarioService {
     void delete(Usuario usuario);
     
     Usuario getUsuarioPorCorreo(String correo);
+    long getTotalUsuarios();
 }

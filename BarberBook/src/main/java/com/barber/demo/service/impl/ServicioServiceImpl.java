@@ -17,7 +17,10 @@ public class ServicioServiceImpl implements ServicioService {
     public List<Servicio> getServicios() {
         return servicioDao.findByActivoTrue();
     }
-
+@Override
+public long getTotalServicios() {
+    return servicioDao.count();
+}
     @Override
     public Servicio getServicio(Servicio servicio) {
         return servicioDao.findById(servicio.getIdServicio()).orElse(null);

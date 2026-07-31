@@ -17,7 +17,10 @@ public class UsuarioServiceImpl implements UsuarioService {
     public List<Usuario> getUsuarios() {
         return usuarioDao.findAll();
     }
-
+@Override
+public long getTotalUsuarios() {
+    return usuarioDao.count();
+}
     @Override
     public Usuario getUsuario(Usuario usuario) {
         return usuarioDao.findById(usuario.getIdUsuario()).orElse(null);
