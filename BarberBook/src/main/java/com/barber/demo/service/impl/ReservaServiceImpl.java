@@ -25,10 +25,12 @@ public class ReservaServiceImpl implements ReservaService {
     public List<Reserva> getReservas() {
         return reservaDao.findAll();
     }
-@Override
-public List<Reserva> getReservasPorEmpleado(Empleado empleado) {
-    return reservaDao.findByEmpleado(empleado);
-}
+
+    @Override
+    public List<Reserva> getReservasPorEmpleado(Empleado empleado) {
+        return reservaDao.findByEmpleado(empleado);
+    }
+
     @Override
     public Reserva getReserva(Reserva reserva) {
         return reservaDao.findById(reserva.getIdReserva()).orElse(null);
@@ -38,15 +40,17 @@ public List<Reserva> getReservasPorEmpleado(Empleado empleado) {
     public void save(Reserva reserva) {
         reservaDao.save(reserva);
     }
-@Override
-public List<Reserva> getTodasLasReservas() {
-    return reservaDao.findAll();
-}
 
-@Override
-public List<Reserva> getReservasPorEstado(String estado) {
-    return reservaDao.findByEstadoOrderByFechaDescHoraDesc(estado);
-}
+    @Override
+    public List<Reserva> getTodasLasReservas() {
+        return reservaDao.findAll();
+    }
+
+    @Override
+    public List<Reserva> getReservasPorEstado(String estado) {
+        return reservaDao.findByEstadoOrderByFechaDescHoraDesc(estado);
+    }
+
     @Override
     public void delete(Reserva reserva) {
         reservaDao.delete(reserva);
@@ -56,15 +60,17 @@ public List<Reserva> getReservasPorEstado(String estado) {
     public List<Reserva> getReservasPorUsuario(Usuario usuario) {
         return reservaDao.findByUsuarioOrderByFechaDescHoraDesc(usuario);
     }
-@Override
-public long getTotalReservas() {
-    return reservaDao.count();
-}
 
-@Override
-public long getCantidadPorEstado(String estado) {
-    return reservaDao.countByEstado(estado);
-}
+    @Override
+    public long getTotalReservas() {
+        return reservaDao.count();
+    }
+
+    @Override
+    public long getCantidadPorEstado(String estado) {
+        return reservaDao.countByEstado(estado);
+    }
+
     @Override
     public void cancelarReserva(Integer idReserva, Usuario usuarioSesion) {
         if (usuarioSesion == null) {
@@ -91,6 +97,32 @@ public long getCantidadPorEstado(String estado) {
         reserva.setEstado("Cancelada");
         reservaDao.save(reserva);
 
+        liberarHorarioSiCorresponde(reserva);
+    }
+
+    @Override
+    public void actualizarEstado(Integer idReserva, String nuevoEstado) {
+
+        List<String> estadosValidos = List.of("Pendiente", "En proceso", "Completada", "Cancelada");
+        if (nuevoEstado == null || !estadosValidos.contains(nuevoEstado)) {
+            throw new IllegalArgumentException("El estado indicado no es válido.");
+        }
+
+        Reserva reserva = reservaDao.findById(idReserva)
+                .orElseThrow(() -> new IllegalArgumentException("La reserva indicada no existe."));
+
+        boolean estabaCancelada = "Cancelada".equalsIgnoreCase(reserva.getEstado());
+        boolean quedaCancelada = "Cancelada".equalsIgnoreCase(nuevoEstado);
+
+        reserva.setEstado(nuevoEstado);
+        reservaDao.save(reserva);
+
+        if (!estabaCancelada && quedaCancelada) {
+            liberarHorarioSiCorresponde(reserva);
+        }
+    }
+
+    private void liberarHorarioSiCorresponde(Reserva reserva) {
         Horario horario = horarioService.buscarPorEmpleadoFechaHora(
                 reserva.getEmpleado(), reserva.getFecha(), reserva.getHora());
         if (horario != null) {
